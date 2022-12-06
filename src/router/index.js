@@ -3,6 +3,7 @@ import HomePage from "../pages/HomePage.vue";
 import BasePage from "../pages/BasePage.vue";
 import StudentsPage from "../pages/StudentsPage.vue";
 import LoginPage from "../pages/LoginPage.vue";
+import EditStudent from "../components/student/EditStudent.vue";
 const routes = [
  {
   path: "/",
@@ -19,6 +20,14 @@ const routes = [
     name: "Students",
     component: StudentsPage,
     auth: true,
+    children: [
+     {
+      name: "edit-student",
+      path: ":studentIndex/edit-student",
+      component: EditStudent,
+      props: true,
+     },
+    ],
    },
   ],
  },

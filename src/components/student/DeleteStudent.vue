@@ -1,33 +1,47 @@
 <template>
- <div v-if="open" class="backdrop" @click="$emit('close')"></div>
- <transition name="modal">
-  <dialog open v-if="open">
-   <form @submit.prevent="deleteStudent">
-    <div class="card w-200">
-     <div class="card-body">
-      <h5 class="card-title">Delete Student</h5>
-      <p class="card-text">
-       Do you want to delete student with index: "{{ index }}"
-      </p>
-      <button @click="$emit('close')" type="button" class="btn btn-primary">
-       Cancel
-      </button>
-      <button type="submit" class="btn btn-primary">Delete</button>
-     </div>
-    </div>
-   </form>
-  </dialog>
- </transition>
+ <el-dialog
+  title="Delete"
+  :model-value="this.oppen"
+  width="30%"
+  :before-close="handleClose"
+  center
+ >
+  <span> Are you sure you want to delete student: {{ this.index }}? </span>
+  <template #footer>
+   <span class="dialog-footer">
+    <el-button @click="handleClose">Cancel</el-button>
+    <el-button type="primary" @click="deleteStudent"> Confirm </el-button>
+   </span>
+  </template>
+ </el-dialog>
 </template>
 
 <script>
+import { mapStores } from "pinia";
+import { useStudentsStore } from "../../store/index";
 export default {
  props: ["open", "index"],
  emits: ["close"],
+ data() {
+  return {
+   oppen: this.open,
+  };
+ },
+ computed: {
+  ...mapStores(useStudentsStore),
+ },
  methods: {
   deleteStudent() {
-   this.$store.dispatch("deleteStudent", { index: this.index });
+   this.studentsStore.deleteStudent({ index: this.index });
    this.$emit("close");
+  },
+  handleClose() {
+   this.$emit("close");
+  },
+ },
+ watch: {
+  open() {
+   this.oppen = this.open;
   },
  },
 };

@@ -43,6 +43,9 @@
 </template>
 
 <script>
+import { mapStores } from "pinia";
+import { useStudentsStore } from "../store/index";
+
 export default {
  data() {
   return {
@@ -61,7 +64,7 @@ export default {
   login() {
    this.validateData();
    if (!this.passwordBul && !this.errorList.passwordBul && this.validatedUser) {
-    this.$store.commit("logIn");
+    this.studentsStore.logIn();
     this.$router.push("/");
    }
   },
@@ -89,7 +92,7 @@ export default {
    }
   },
   validateUser() {
-   const users = this.$store.getters.getUsers;
+   const users = this.studentsStore.getUsers;
    const foundUser = users.find((x) => x.username === this.username);
    if (typeof foundUser === "undefined") {
     this.errorList.usernameBul = true;
@@ -105,6 +108,9 @@ export default {
     this.validatedUser = true;
    }
   },
+ },
+ computed: {
+  ...mapStores(useStudentsStore),
  },
 };
 </script>

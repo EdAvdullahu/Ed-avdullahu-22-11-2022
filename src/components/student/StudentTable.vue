@@ -1,84 +1,115 @@
 <template>
  <delete-student
+  v-if="deleteIsOpen"
   :open="deleteIsOpen"
-  :index="this.studentIndex"
-  @close="cancelDelete"
+  :index="studentIndex"
+  @close="closeDelete"
  ></delete-student>
- <edit-student
-  :open="editIsOpen"
-  :studentIndex="this.studentIndex"
-  @close="cancelEdit"
- ></edit-student>
- <table class="table table-striped table-hover" id="sortTable">
-  <thead>
-   <tr>
-    <th scope="col">Index</th>
-    <th scope="col">Name</th>
-    <th scope="col">Date of birth</th>
-    <th scope="col">Municipality</th>
-    <th scope="col">Actions</th>
-   </tr>
-  </thead>
-  <tbody class="table-group-divider">
-   <tr v-for="student in students" :key="student.index">
-    <td>{{ student.index }}</td>
-    <td>{{ student.name }}</td>
-    <td>{{ student.doB }}</td>
-    <td>{{ student.municipality }}</td>
-    <td>
-     <button @click="editStudent(student.index)" class="btn btn-secondary">
+ <!-- <edit-student
+  v-if="editIsOpen"
+  :studentIndex="studentIndex"
+  @close="closeEdit"
+ ></edit-student> -->
+ <add-student
+  :open="addIsOpen"
+  @close="handleAdd"
+  v-if="addIsOpen"
+ ></add-student>
+ <el-button class="mt-4" style="width: 10%" @click="handleAdd"
+  >Add Student</el-button
+ >
+ <el-table
+  :data="filterTableData"
+  :default-sort="{ prop: 'name', order: 'descending' }"
+  style="width: 100%"
+ >
+  <el-table-column prop="index" label="Index" sortable />
+  <el-table-column prop="name" label="Name" sortable />
+  <el-table-column prop="doB" label="Date of Birth" />
+  <el-table-column prop="municipality" label="Municipality" />
+  <el-table-column align="right">
+   <template #header>
+    <el-input v-model="search" size="small" placeholder="Type to search" />
+   </template>
+   <template #default="scope">
+    <el-button size="small" class="button">
+     <router-link
+      :to="{ name: 'edit-student', params: { studentIndex: scope.row.index } }"
+     >
       Edit
-     </button>
-     <button @click="deleteStudent(student.index)" class="btn btn-secondary">
-      Delete
-     </button>
-    </td>
-   </tr>
-  </tbody>
- </table>
+     </router-link>
+    </el-button>
+    <el-button size="small" type="danger" @click="handleDelete(scope.row.index)"
+     >Delete</el-button
+    >
+   </template>
+  </el-table-column>
+ </el-table>
 </template>
 
 <script>
 import DeleteStudent from "./DeleteStudent.vue";
-import EditStudent from "./EditStudent.vue";
+// import EditStudent from "./EditStudent.vue";
+import AddStudent from "./AddStudent.vue";
 export default {
- components: {
-  DeleteStudent,
-  EditStudent,
- },
  props: {
   students: {
    type: Array,
    required: true,
   },
  },
- emits: ["reload"],
+ components: {
+  DeleteStudent,
+  AddStudent,
+ },
  data() {
   return {
+   search: "",
    editIsOpen: false,
    deleteIsOpen: false,
+   addIsOpen: false,
    studentIndex: "",
+   student: {},
   };
  },
+ computed: {
+  filterTableData() {
+   return this.students.filter(
+    (data) =>
+     !this.search ||
+     data.name.toLowerCase().includes(this.search.toLowerCase()) ||
+     data.municipality.toLowerCase().includes(this.search.toLowerCase()) ||
+     data.index.includes(this.search)
+   );
+  },
+ },
  methods: {
-  editStudent(studentIndex) {
-   this.studentIndex = studentIndex;
-   this.editIsOpen = true;
-  },
-  cancelEdit() {
-   this.studentIndex = "";
-   this.editIsOpen = false;
-   this.$emit("reload");
-  },
-  deleteStudent(studentIndex) {
-   this.studentIndex = studentIndex;
+  handleDelete(index) {
    this.deleteIsOpen = true;
+   this.studentIndex = index;
   },
-  cancelDelete() {
-   this.deleteIsOpen = false;
+  closeDelete() {
    this.studentIndex = "";
-   this.$emit("reload");
+   this.deleteIsOpen = false;
+  },
+  handleAdd() {
+   this.addIsOpen = !this.addIsOpen;
   },
  },
 };
 </script>
+
+<style scoped>
+a {
+ text-decoration: none;
+ color: black;
+ width: 100%;
+ height: 100%;
+ margin: 0;
+ padding: 1rem 0.5rem;
+}
+.button {
+ padding: 0;
+ margin: 0;
+}
+</style>

@@ -1,142 +1,127 @@
 <template>
- <div v-if="open" class="backdrop" @click="$emit('close')"></div>
- <transition name="modal">
-  <dialog open v-if="open">
-   <div class="card w-200">
-    <div class="card-body">
-     <h5 class="card-title">Edit Student</h5>
-     <form @submit.prevent="editUser">
-      <table>
-       <tr>
-        <td><label for="index">Index</label></td>
-        <td>
-         <input type="text" id="index" readonly v-model="index" />
-        </td>
-       </tr>
-       <tr>
-        <td><label for="name">Name</label></td>
-        <td>
-         <input type="text" id="name" v-model="name" />
-         <p class="errorMsg" v-if="this.errorList.name !== ''">
-          {{ this.errorList.name }}
-         </p>
-        </td>
-       </tr>
-       <tr>
-        <td><label for="dob">Date of birth</label></td>
-        <td>
-         <input type="date" v-model="doB" id="dob" />
-         <p class="errorMsg" v-if="this.errorList.doB !== ''">
-          {{ this.errorList.doB }}
-         </p>
-        </td>
-       </tr>
-       <tr>
-        <td><label for="municipality">Municipality</label></td>
-        <td>
-         <input type="text" id="municipality" v-model="municipality" />
-         <p class="errorMsg" v-if="this.errorList.municipality !== ''">
-          {{ this.errorList.municipality }}
-         </p>
-        </td>
-       </tr>
-       <tr>
-        <td>
-         <button class="btn btn-primary" type="button" @click="$emit('close')">
-          Cancel
-         </button>
-        </td>
-        <td><button class="btn btn-primary" type="submit">Save</button></td>
-       </tr>
-      </table>
-     </form>
-    </div>
-   </div>
-  </dialog>
- </transition>
+ <el-dialog
+  title="Edit Student"
+  :model-value="this.oppen"
+  width="30%"
+  :before-close="handleClose"
+  center
+  :destroy-on-close="true"
+  v-if="this.oppen"
+ >
+  <el-form
+   ref="ruleFormRef"
+   :model="ruleForm"
+   status-icon
+   :rules="rules"
+   label-width="120px"
+   class="demo-ruleForm"
+  >
+   <el-form-item label="Index" prop="index">
+    <el-input
+     v-model="ruleForm.index"
+     type="text"
+     autocomplete="off"
+     readonly
+    />
+   </el-form-item>
+   <el-form-item label="Name" prop="name">
+    <el-input v-model="ruleForm.name" type="text" autocomplete="off" />
+   </el-form-item>
+   <el-form-item label="Municipality" prop="municipality">
+    <el-input v-model="ruleForm.municipality" type="text" autocomplete="off" />
+   </el-form-item>
+   <el-form-item label="Date of Birth" prop="doB">
+    <el-input v-model="ruleForm.doB" type="date" autocomplete="off" />
+   </el-form-item>
+   <el-form-item>
+    <el-button @click="handleClose">Cancel</el-button>
+    <el-button type="primary" @click="submitForm(this.$refs.ruleFormRef)"
+     >Submit</el-button
+    >
+   </el-form-item>
+  </el-form>
+ </el-dialog>
 </template>
 
 <script>
+import { mapStores } from "pinia";
+import { useStudentsStore } from "../../store/index";
 export default {
- props: ["open", "studentIndex"],
+ props: ["studentIndex"],
  emits: ["close"],
  data() {
   return {
-   loading: false,
-   index: "",
-   name: "",
-   doB: "",
-   municipality: "",
-   allowEdit: true,
-   errorList: {
+   oppen: true,
+   ruleForm: {
+    index: "",
     name: "",
-    doB: "",
     municipality: "",
+    doB: "",
+   },
+   rules: {
+    index: [{ validator: this.validateIndex, trigger: "blur" }],
+    name: [{ validator: this.validateName, trigger: "blur" }],
+    municipality: [{ validator: this.validateMunicipality, trigger: "blur" }],
+    doB: [{ validator: this.checkAge, trigger: "blur" }],
    },
   };
  },
  methods: {
-  editUser() {
-   this.validateData();
-   if (this.allowEdit && this.open) {
-    const updatedUser = {
-     index: this.studentIndex,
-     name: this.name,
-     doB: this.doB,
-     municipality: this.municipality,
-    };
-    this.$store.dispatch("updateStudents", updatedUser);
-    this.$emit("close");
+  checkAge(rule, value, callback) {
+   if (!value) {
+    return callback(new Error("Please input a date of birth."));
+   } else {
+    callback();
    }
   },
-  validateData() {
-   if (this.name === "") {
-    this.allowEdit = false;
-    this.errorList.name = "Please fill the name field.";
-   } else if (this.name.split(" ").length === 1) {
-    this.allowEdit = false;
-    this.errorList.name = "Please enter name and surname.";
+  validateIndex(rule, value, callback) {
+   if (!value) {
+    return callback(new Error("Please input an Index."));
+   } else if (value.length !== 4) {
+    return callback(new Error("Index should be 4 digits long."));
    } else {
-    this.errorList.name = "";
+    callback();
    }
-   if (this.doB === "") {
-    this.allowEdit = false;
-    this.errorList.doB = "Please fill the Date of Birth field.";
+  },
+  validateName(rule, value, callback) {
+   if (!value) {
+    return callback(new Error("Please input a Name."));
+   } else if (!value.includes(" ")) {
+    return callback(new Error("Please enter name and surname"));
    } else {
-    this.errorList.doB = "";
+    callback();
    }
-   if (this.municipality === "") {
-    this.allowEdit = false;
-    this.errorList.municipality = "Please fill the municipality field.";
+  },
+  validateMunicipality(rule, value, callback) {
+   if (!value) {
+    return callback(new Error("Please input a Municipality."));
    } else {
-    this.errorList.municipality = "";
+    callback();
    }
-   if (
-    this.errorList.name === "" &&
-    this.errorList.doB === "" &&
-    this.errorList.municipality === ""
-   ) {
-    this.allowEdit = true;
-   }
+  },
+  handleClose() {
+   this.$router.go(-1);
+  },
+  submitForm(form) {
+   form.validate((valid) => {
+    if (valid) {
+     this.studentsStore.editStudent(this.ruleForm);
+     this.handleClose();
+    } else {
+     return false;
+    }
+   });
   },
  },
- watch: {
-  open() {
-   if (this.open) {
-    this.errorList = {
-     name: "",
-     doB: "",
-     municipality: "",
-    };
-    this.loading = true;
-    const user = this.$store.getters.getStudentById(this.studentIndex);
-    this.index = user.index;
-    this.name = user.name;
-    this.doB = user.doB;
-    this.municipality = user.municipality;
-    this.loading = false;
-   }
-  },
+ mounted() {
+  const user = this.studentsStore.getStudentById(this.studentIndex);
+  this.ruleForm.index = user.index;
+  this.ruleForm.name = user.name;
+  this.ruleForm.doB = user.doB;
+  this.ruleForm.municipality = user.municipality;
+ },
+ computed: {
+  ...mapStores(useStudentsStore),
  },
 };
 </script>

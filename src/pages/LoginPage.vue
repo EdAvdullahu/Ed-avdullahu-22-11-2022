@@ -44,7 +44,7 @@
 
 <script>
 import { mapStores } from "pinia";
-import { useStudentsStore } from "../store/index";
+import { useUserStore } from "../store/users";
 
 export default {
  data() {
@@ -64,7 +64,7 @@ export default {
   login() {
    this.validateData();
    if (!this.passwordBul && !this.errorList.passwordBul && this.validatedUser) {
-    this.studentsStore.logIn();
+    this.activeUserStore.logIn();
     this.$router.push("/");
    }
   },
@@ -92,7 +92,7 @@ export default {
    }
   },
   validateUser() {
-   const users = this.studentsStore.getUsers;
+   const users = this.activeUserStore.getUsers;
    const foundUser = users.find((x) => x.username === this.username);
    if (typeof foundUser === "undefined") {
     this.errorList.usernameBul = true;
@@ -110,7 +110,7 @@ export default {
   },
  },
  computed: {
-  ...mapStores(useStudentsStore),
+  ...mapStores(useUserStore),
  },
 };
 </script>

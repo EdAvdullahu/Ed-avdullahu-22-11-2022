@@ -44,7 +44,7 @@ const router = createRouter({
 });
 
 router.beforeEach(function (to, from, next) {
- const logedIn = JSON.parse(localStorage.getItem("activeUser"));
+ const logedIn = JSON.parse(localStorage.getItem("login"));
  if (to.path !== "/login" && to.path !== "login" && !logedIn) {
   next({ path: "/login" });
  } else if ((to.path === "/login" || to.path === "login") && logedIn) {

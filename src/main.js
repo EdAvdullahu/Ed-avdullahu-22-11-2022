@@ -1,10 +1,10 @@
 import { createApp } from "vue";
-import "bootstrap/dist/css/bootstrap.min.css";
 import App from "./App.vue";
 import router from "./router";
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import { createPinia } from "pinia";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const data = [
  {
@@ -59,11 +59,16 @@ const users = [
  },
 ];
 
-localStorage.setItem("data", JSON.stringify(data));
+localStorage.setItem("students", JSON.stringify(data));
 localStorage.setItem("users", JSON.stringify(users));
-localStorage.setItem("activeUser", JSON.stringify(false));
+localStorage.setItem("login", JSON.stringify(false));
 
 const pinia = createPinia();
+pinia.use(({store})=>{
+ store.$subscribe((mutations)=>{
+  localStorage.setItem(mutations.events.key, mutations.events.newValue);
+ })
+})
 
 const app = createApp(App);
 app.use(ElementPlus);
